@@ -35,10 +35,6 @@ func processCommands(args []string) {
 	}
 }
 
-func addsub(args []string) {
-	fmt.Printf("addsub %v", args)
-}
-
 func build() {
 	fmt.Print("build to be done")
 }
