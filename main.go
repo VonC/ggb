@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"./cmd"
+	"github.com/VonC/ggb/cmd"
 )
 
 func main() {
