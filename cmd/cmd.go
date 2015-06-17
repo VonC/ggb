@@ -41,11 +41,14 @@ type Command struct {
 
 	// Subcommands
 	subcmds map[string]*Command
+
+	// Args passed when running command
+	args []string
 }
 
 type parent interface {
 	fullCommand() string
-	checkGlobalFlags(args []string) []string
+	parseFlags()
 }
 
 func NewCommand(name, usageLine, short, long string, run func([]string) error, parent *Command) *Command {
@@ -57,6 +60,7 @@ func NewCommand(name, usageLine, short, long string, run func([]string) error, p
 		run:       run,
 		fs:        flag.NewFlagSet(name, flag.ExitOnError),
 		subcmds:   make(map[string]*Command),
+		args:      []string{},
 	}
 	if parent == nil {
 		// This is a root command
@@ -88,17 +92,22 @@ func RunCommand(args []string) error {
 	if err != nil {
 		return err
 	}
-	args = cmd.checkGlobalFlags(args)
-	fs := cmd.fs
-	if err := fs.Parse(args); err != nil {
-		fmt.Printf("Incorrect usage of %s:", cmd.fullCommand())
-		fs.Usage()
-		os.Exit(1)
-	}
+	cmd.parseFlags()
 	if cmd.run == nil {
 		return nil
 	}
-	return cmd.run(cmd.fs.Args()[1:])
+	return cmd.run(cmd.fs.Args())
+}
+
+func (cmd Command) parseFlags() {
+	if cmd.parent != nil {
+		cmd.parent.parseFlags()
+	}
+	if err := cmd.fs.Parse(cmd.args); err != nil {
+		fmt.Printf("Incorrect usage of %s:", cmd.fullCommand())
+		cmd.fs.Usage()
+		os.Exit(1)
+	}
 }
 
 func (cmd Command) fullCommand() string {
@@ -120,25 +129,27 @@ func commandFromArgs(args []string) (*Command, error) {
 			}
 		}
 		if arg == "--" {
+			cmd.args = append(cmd.args, args[i:]...)
 			return cmd, nil
 		}
 		if strings.HasPrefix(arg, "-") {
+			cmd.args = append(cmd.args, arg)
 			continue
 		}
 		var subcmd *Command
 		if cmd == nil {
 			cmd = commands[arg]
+			if cmd == nil {
+				return nil, fmt.Errorf("Unknown command '%s'", arg)
+			}
 		} else {
 			subcmd = cmd.subcmds[arg]
+			if subcmd == nil {
+				cmd.args = append(cmd.args, arg)
+			} else {
+				cmd = subcmd
+			}
 		}
-		if cmd == nil {
-			return nil, fmt.Errorf("Unknown command '%s'", arg)
-		}
-		if subcmd == nil {
-			// let's consider all the rest as parameters of the current command
-			return cmd, nil
-		}
-		cmd = subcmd
 	}
 	if cmd == nil {
 		return nil, fmt.Errorf("Unknown command from args '%v'", args)
