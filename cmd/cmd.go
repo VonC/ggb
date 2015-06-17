@@ -9,7 +9,7 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-var commands map[string]*Command = make(map[string]*Command)
+var commands = map[string]*Command{}
 
 // inspired by https://github.com/constabulary/gb/blob/master/cmd/cmd.go
 
