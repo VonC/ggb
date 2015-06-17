@@ -33,8 +33,8 @@ type Command struct {
 	// FlagSet for adding flags for that command
 	fs *flag.FlagSet
 
-	// FlagSet for adding flags for that command and any sub-Command
-	gfs *flag.FlagSet
+	// function for adding flags for that command and any sub-Command FlagSet
+	gfs func(*flag.FlagSet)
 
 	// Parent Command
 	parent parent
@@ -56,7 +56,6 @@ func NewCommand(name, usageLine, short, long string, run func([]string) error, p
 		long:      long,
 		run:       run,
 		fs:        flag.NewFlagSet(name, flag.ExitOnError),
-		gfs:       flag.NewFlagSet(name, flag.ContinueOnError),
 		subcmds:   make(map[string]*Command),
 	}
 	if parent == nil {
@@ -73,9 +72,10 @@ func (cmd *Command) FS() *flag.FlagSet {
 	return cmd.fs
 }
 
-// FlagSet for adding flags for that command and any sub-Command
-func (cmd *Command) GFS() *flag.FlagSet {
-	return cmd.gfs
+// Set function for adding flags for that command and any sub-Command FlagSet
+func (cmd *Command) SetGFS(gfs func(*flag.FlagSet)) {
+	cmd.gfs = gfs
+	gfs(cmd.fs)
 }
 
 // Runnable indicates this is a command that can be involved.
@@ -144,13 +144,4 @@ func commandFromArgs(args []string) (*Command, error) {
 		return nil, fmt.Errorf("Unknown command from args '%v'", args)
 	}
 	return cmd, nil
-}
-
-func (cmd Command) checkGlobalFlags(args []string) []string {
-	if cmd.parent != nil {
-		args = cmd.parent.checkGlobalFlags(args)
-	}
-	cmd.gfs.Parse(args)
-	args = cmd.gfs.Args()
-	return args
 }
