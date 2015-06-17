@@ -62,12 +62,14 @@ func NewCommand(name, usageLine, short, long string, run func([]string) error, p
 		subcmds:   make(map[string]*Command),
 		args:      []string{},
 	}
+	// fmt.Printf("New Command '%s', nil parent: %v\n", cmd.name, cmd.parent == nil)
 	if parent == nil {
 		// This is a root command
 		commands[name] = cmd
 	} else {
 		cmd.parent = *parent
 	}
+	// fmt.Printf("registered parent for name '%s': %v\n", name, commands)
 	return cmd
 }
 
@@ -88,7 +90,9 @@ func (c *Command) Runnable() bool { return c.run != nil }
 
 // RunCommand parses flags and runs the Command.
 func RunCommand(args []string) error {
+	// fmt.Printf("args %+v, c %v '%v'\n", os.Args, commands == nil, commands)
 	cmd, err := commandFromArgs(os.Args)
+	// fmt.Printf("cmd nil?? %v, args %+v, err='%v'\n", cmd == nil, os.Args, err)
 	if err != nil {
 		return err
 	}
@@ -120,6 +124,7 @@ func (cmd Command) fullCommand() string {
 
 func commandFromArgs(args []string) (*Command, error) {
 	var cmd *Command
+	// fmt.Printf("len %v\n", len(args))
 	for i, arg := range args {
 		if i == 0 {
 			arg = filepath.Base(arg)
@@ -128,6 +133,7 @@ func commandFromArgs(args []string) (*Command, error) {
 				arg = arg[:len(arg)-len(ext)]
 			}
 		}
+		// fmt.Printf("arg='%s'\n", arg)
 		if arg == "--" {
 			cmd.args = append(cmd.args, args[i:]...)
 			return cmd, nil
@@ -137,6 +143,7 @@ func commandFromArgs(args []string) (*Command, error) {
 			continue
 		}
 		var subcmd *Command
+		// fmt.Printf("cmd nil %v, reg %v\n", cmd == nil, commands)
 		if cmd == nil {
 			cmd = commands[arg]
 			if cmd == nil {
