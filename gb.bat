@@ -5,7 +5,6 @@ set GOBIN=%~dp0/bin
 cd %~dp0
 rem cd
 rem set GO
-%GOROOT%\bin\go.exe build ./cmd
-%GOROOT%\bin\go.exe install .
+%GOROOT%\bin\go.exe install -a .
 endlocal
 doskey ggb=%~dp0\bin\ggb.exe $*
