@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/VonC/ggb/cmd"
+	"github.com/VonC/ggb/prj"
 )
 
 func main() {
@@ -18,6 +19,12 @@ func main() {
 
 func build(args []string) error {
 	fmt.Printf("build to be done with args '%v'", args)
+	p, err := prj.GetProject()
+	if err != nil {
+		fmt.Printf("%s", err.Error())
+		os.Exit(1)
+	}
+	fmt.Printf(" in root folder '%s'", p.RootFolder())
 	return nil
 }
 
