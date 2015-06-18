@@ -25,6 +25,8 @@ func build(args []string) error {
 		os.Exit(1)
 	}
 	fmt.Printf(" in root folder '%s'", p.RootFolder())
+	gout, gerr := prj.Golang("install -a .")
+	fmt.Printf("gout '%s', gerr '%s'", gout, gerr)
 	return nil
 }
 
