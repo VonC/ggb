@@ -51,6 +51,7 @@ func init() {
 	if err != nil {
 		log.Fatal("git must be installed")
 	}
+	// fmt.Println(gitPath)
 	goPath, err = exec.LookPath("go")
 	if err != nil {
 		log.Fatal("go must be installed")
@@ -67,8 +68,11 @@ func Git(cmd string) (string, string) {
 	return execcmd(gitPath, cmd)
 }
 func Golang(cmd string) (string, string) {
+	os.Setenv("GOPATH", wd+`\deps`)
+	os.Setenv("GOBIN", wd+`\bin`)
 	return execcmd(goPath, cmd)
 }
+
 func execcmd(exe, cmd string) (string, string) {
 	args := strings.Split(cmd, " ")
 	c := exec.Command(exe, args...)
@@ -79,7 +83,7 @@ func execcmd(exe, cmd string) (string, string) {
 	c.Stderr = &berr
 	err := c.Run()
 	if err != nil {
-		log.Fatalf("Unable to run '%s %s': err '%s'", exe, cmd, err.Error())
+		fmt.Printf("Unable to run '%s %s': err '%s'\n", exe, cmd, err.Error())
 	}
 	return bout.String(), berr.String()
 }
