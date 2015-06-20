@@ -68,22 +68,22 @@ func Git(cmd string) (string, string) {
 	return execcmd(gitPath, cmd)
 }
 func Golang(cmd string) (string, string) {
-	os.Setenv("GOPATH", wd+`\deps`)
-	os.Setenv("GOBIN", wd+`\bin`)
+	os.Setenv("GOPATH", project.rootFolder+`/deps`)
+	os.Setenv("GOBIN", project.rootFolder+`/bin`)
 	return execcmd(goPath, cmd)
 }
 
 func execcmd(exe, cmd string) (string, string) {
 	args := strings.Split(cmd, " ")
 	c := exec.Command(exe, args...)
-	c.Dir = wd
+	c.Dir = project.rootFolder
 	var bout bytes.Buffer
 	c.Stdout = &bout
 	var berr bytes.Buffer
 	c.Stderr = &berr
 	err := c.Run()
 	if err != nil {
-		fmt.Printf("Unable to run '%s %s': err '%s'\n", exe, cmd, err.Error())
+		fmt.Printf("Unable to run '%s %s' in '%s': err '%s'\n", exe, cmd, wd, err.Error())
 	}
 	return bout.String(), berr.String()
 }
