@@ -9,7 +9,9 @@ import (
 )
 
 func main() {
-	fmt.Printf("ggb: ")
+	if verbose {
+		fmt.Printf("ggb: ")
+	}
 	err := cmd.RunCommand(os.Args)
 	if err != nil {
 		fmt.Printf("%s", err.Error())
@@ -18,13 +20,17 @@ func main() {
 }
 
 func build(args []string) error {
-	fmt.Printf("build to be done with args '%v'", args)
+	if verbose {
+		fmt.Printf("build to be done with args '%v'", args)
+	}
 	p, err := prj.GetProject()
 	if err != nil {
 		fmt.Printf("%s", err.Error())
 		os.Exit(1)
 	}
-	fmt.Printf(" in root folder '%s'\n", p.RootFolder())
+	if verbose {
+		fmt.Printf(" in root folder '%s'\n", p.RootFolder())
+	}
 	// gout, gerr := prj.Golang("env")
 	// fmt.Printf("gout '%s', gerr '%v'\n", gout, gerr)
 	prj.Golang("install -a .")
