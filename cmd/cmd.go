@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -30,11 +31,20 @@ type Command struct {
 	// Run is invoked with arguments left over after flag parsing.
 	run func(args []string) error
 
-	// FlagSet for adding flags for that command
+	// FlagSet for that command only
 	fs *flag.FlagSet
+	// FlagSet for that command and all sub-commands
+	gfs *flag.FlagSet
+	// FlagSet combined (command only and all sub-commands)
+	afs *flag.FlagSet
+	// output buffer for afs
+	abuf *bytes.Buffer
+
+	// function for adding FlagSet for that command
+	ffs func(*flag.FlagSet)
 
 	// function for adding flags for that command and any sub-Command FlagSet
-	gfs func(*flag.FlagSet)
+	fgfs func(*flag.FlagSet)
 
 	// Parent Command
 	parent parent
@@ -59,9 +69,14 @@ func NewCommand(name, usageLine, short, long string, run func([]string) error, p
 		long:      long,
 		run:       run,
 		fs:        flag.NewFlagSet(name, flag.ExitOnError),
+		gfs:       flag.NewFlagSet(name, flag.ExitOnError),
+		afs:       flag.NewFlagSet(name, flag.ContinueOnError),
 		subcmds:   make(map[string]*Command),
 		args:      []string{},
 	}
+	cmd.abuf = new(bytes.Buffer)
+	cmd.afs.SetOutput(cmd.abuf)
+	cmd.afs.Usage = cmd.FUsage
 	// fmt.Printf("New Command '%s', nil parent: %v\n", cmd.name, cmd.parent == nil)
 	if parent == nil {
 		// This is a root command
@@ -73,15 +88,18 @@ func NewCommand(name, usageLine, short, long string, run func([]string) error, p
 	return cmd
 }
 
-// FlagSet for adding flags for that command
-func (cmd *Command) FS() *flag.FlagSet {
-	return cmd.fs
+// Set function for adding flags for that command and any sub-Command FlagSet
+func (cmd *Command) SetGFS(fgfs func(*flag.FlagSet)) {
+	cmd.fgfs = fgfs
+	fgfs(cmd.afs)
+	fgfs(cmd.gfs)
 }
 
-// Set function for adding flags for that command and any sub-Command FlagSet
-func (cmd *Command) SetGFS(gfs func(*flag.FlagSet)) {
-	cmd.gfs = gfs
-	gfs(cmd.fs)
+// Set function for adding flags for that command FlagSet only
+func (cmd *Command) SetFS(ffs func(*flag.FlagSet)) {
+	cmd.ffs = ffs
+	ffs(cmd.afs)
+	ffs(cmd.gfs)
 }
 
 // Runnable indicates this is a command that can be involved.
@@ -100,16 +118,16 @@ func RunCommand(args []string) error {
 	if cmd.run == nil {
 		return nil
 	}
-	return cmd.run(cmd.fs.Args())
+	return cmd.run(cmd.afs.Args())
 }
 
 func (cmd Command) parseFlags() {
 	if cmd.parent != nil {
 		cmd.parent.parseFlags()
 	}
-	if err := cmd.fs.Parse(cmd.args); err != nil {
-		fmt.Printf("Incorrect usage of %s:", cmd.fullCommand())
-		cmd.fs.Usage()
+	if err := cmd.afs.Parse(cmd.args); err != nil {
+		fmt.Printf("Incorrect usage of %s:\n", cmd.fullCommand())
+		fmt.Printf("%s", cmd.abuf.String())
 		os.Exit(1)
 	}
 }
@@ -162,4 +180,19 @@ func commandFromArgs(args []string) (*Command, error) {
 		return nil, fmt.Errorf("Unknown command from args '%v'", args)
 	}
 	return cmd, nil
+}
+
+func (c *Command) FUsage() {
+	s := strings.Split(c.abuf.String(), "\n")[0]
+	c.abuf.Truncate(len(s))
+	fmt.Fprintf(c.abuf, "\n%s", c.Usage())
+}
+
+func (c *Command) Usage() string {
+	u := ""
+	u = u + "local flags:\n"
+	u = u + c.fs.FlagUsages()
+	u = u + "global flags:\n"
+	u = u + c.gfs.FlagUsages()
+	return u
 }
