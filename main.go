@@ -23,6 +23,7 @@ func build(args []string) error {
 	if verbose {
 		fmt.Printf("build to be done with args '%v'", args)
 	}
+	checkGlobalFlag()
 	p, err := prj.GetProject()
 	if err != nil {
 		fmt.Printf("%s", err.Error())
@@ -50,6 +51,5 @@ func checkGlobalFlag() {
 }
 
 func usage() {
-	fmt.Print(`ggb [-h],
-builds a go project with git submodule dependencies`)
+	fmt.Print(cmdggb.Usage())
 }
