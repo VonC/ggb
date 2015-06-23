@@ -76,7 +76,7 @@ func NewCommand(name, usageLine, short, long string, run func([]string) error, p
 	}
 	cmd.abuf = new(bytes.Buffer)
 	cmd.afs.SetOutput(cmd.abuf)
-	cmd.afs.Usage = cmd.FUsage
+	cmd.afs.Usage = cmd.fUsage
 	// fmt.Printf("New Command '%s', nil parent: %v\n", cmd.name, cmd.parent == nil)
 	if parent == nil {
 		// This is a root command
@@ -182,17 +182,27 @@ func commandFromArgs(args []string) (*Command, error) {
 	return cmd, nil
 }
 
-func (c *Command) FUsage() {
+func (c *Command) fUsage() {
 	s := strings.Split(c.abuf.String(), "\n")[0]
 	c.abuf.Truncate(len(s))
-	fmt.Fprintf(c.abuf, "\n%s", c.Usage())
+	fmt.Fprintf(c.abuf, "\n%s", c.UsageFlags())
 }
 
-func (c *Command) Usage() string {
+func (c *Command) UsageFlags() string {
 	u := ""
 	u = u + "local flags:\n"
 	u = u + c.fs.FlagUsages()
 	u = u + "global flags:\n"
 	u = u + c.gfs.FlagUsages()
+	return u
+}
+
+func (c *Command) Usage() string {
+	u := ""
+	u = u + c.name + ": "
+	u = u + c.short + "\n\n"
+	u = u + c.usageLine + "\n"
+	u = u + c.long + "\n\n"
+	u = u + c.UsageFlags()
 	return u
 }
