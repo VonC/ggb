@@ -33,8 +33,12 @@ func build(args []string) error {
 	}
 	// gout, gerr := prj.Golang("env")
 	// fmt.Printf("gout '%s', gerr '%v'\n", gout, gerr)
-	prj.Golang("install -a .")
+	_, gerr := prj.Golang("install -a .")
 	// fmt.Printf("gout '%s', gerr '%v'\n", gout, gerr)
+	if gerr != nil {
+		fmt.Printf("%s", gerr.Error())
+		os.Exit(1)
+	}
 	return nil
 }
 
