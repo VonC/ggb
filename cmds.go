@@ -10,6 +10,7 @@ var debug bool
 var verbose bool
 var help bool
 var version bool
+var cmdggb *cmd.Command
 
 func init() {
 	initCommands()
@@ -20,11 +21,12 @@ func initCommands() {
 }
 
 func initCommandGgb() {
-	cmdggb := cmd.NewCommand("ggb",
+	cmdggb = cmd.NewCommand(
+		"ggb",
 		"ggb [cmd]",
 		"builds a go project with git submodule dependencies management",
-		`ggb builds, 
-while ggb deps offers dependency management as git submodules`,
+		`ggb (alone) builds, 
+while 'ggb deps' offers dependency management as git submodules`,
 		build, nil)
 	cmdggb.SetGFS(func(gfs *flag.FlagSet) {
 		gfs.BoolVarP(&help, "help", "h", false, "ggb usage")
