@@ -16,6 +16,8 @@ var project *Project
 
 type Project struct {
 	rootFolder string
+	// Global  GOPATH
+	ggopath string
 }
 
 func GetProject() (*Project, error) {
@@ -33,8 +35,10 @@ func GetProject() (*Project, error) {
 			// fmt.Printf("ok")
 			project.rootFolder = wd
 		}
+		project.ggopath = os.Getenv("GOPATH")
 	}
 	// fmt.Printf("prf '%s'", project.rootFolder)
+	// fmt.Printf("prf '%s'", project.ggopath)
 	return project, nil
 }
 
