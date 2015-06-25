@@ -13,6 +13,7 @@ import (
 )
 
 var project *Project
+var Debug bool
 
 type Project struct {
 	rootFolder string
@@ -111,6 +112,9 @@ func Golang(cmd string) (string, error) {
 }
 
 func execcmd(exe, cmd string) (string, error) {
+	if Debug {
+		fmt.Printf("%s %s\n", exe, cmd)
+	}
 	args := strings.Split(cmd, " ")
 	c := exec.Command(exe, args...)
 	c.Dir = project.rootFolder
