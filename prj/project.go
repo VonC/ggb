@@ -116,7 +116,8 @@ func execcmd(exe, cmd string) (string, error) {
 		fmt.Printf("%s %s\n", exe, cmd)
 	}
 	args := strings.Split(cmd, " ")
-	c := exec.Command(exe, args...)
+	args = append([]string{"/c", exe}, args...)
+	c := exec.Command("cmd", args...)
 	c.Dir = project.rootFolder
 	var bout bytes.Buffer
 	c.Stdout = &bout
