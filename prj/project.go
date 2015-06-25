@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -40,7 +41,29 @@ func GetProject() (*Project, error) {
 	}
 	// fmt.Printf("prf '%s'", project.rootFolder)
 	// fmt.Printf("prf '%s'", project.ggopath)
+	depsPrjroot := project.rootFolder + "/deps/src/" + project.name()
+	var err error
+	if depsPrjroot, err = filepath.Abs(depsPrjroot); err != nil {
+		return nil, err
+	}
+	depsPrjdir := filepath.Dir(depsPrjroot)
+	if fi, _ := os.Stat(depsPrjdir); fi == nil {
+		if err := os.MkdirAll(depsPrjdir, os.ModeDir); err != nil {
+			return nil, err
+		}
+	}
+	// fmt.Println(depsPrjdir, depsPrjroot)
+	if fi, _ := os.Stat(depsPrjroot); fi == nil {
+		if _, err = execcmd("mklink", fmt.Sprintf("/J %s %s", depsPrjroot, project.rootFolder)); err != nil {
+			return nil, err
+		}
+	}
 	return project, nil
+}
+
+func (p *Project) name() string {
+	// either base or remote -v origin
+	return "test"
 }
 
 func (p *Project) RootFolder() string {
