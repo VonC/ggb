@@ -63,6 +63,10 @@ func GetProject() (*Project, error) {
 
 func (p *Project) name() string {
 	// either base or remote -v origin
+	// (?m)^(?:http(?:s)://)?(([^@]+)@)?(.*?)(?:.git)?$
+	// git remote show -n origin
+	// git config --local --get remote.origin.url
+	// (?m)^\s+Fetch URL: (.*?)$
 	return "test"
 }
 
