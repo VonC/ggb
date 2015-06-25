@@ -48,6 +48,9 @@ func checkGlobalFlag() {
 		usage()
 		os.Exit(0)
 	}
+	if debug {
+		prj.Debug = true
+	}
 }
 
 func usage() {
