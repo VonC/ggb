@@ -41,7 +41,10 @@ func GetProject() (*Project, error) {
 	}
 	// fmt.Printf("prf '%s'", project.rootFolder)
 	// fmt.Printf("prf '%s'", project.ggopath)
-	depsPrjroot := project.rootFolder + "/deps/src/" + project.name()
+	name := project.name()
+	// fmt.Printf("name '%s'\n", name)
+	depsPrjroot := project.rootFolder + "/deps/src/" + name
+	// fmt.Printf("prf '%s'\n", depsPrjroot)
 	var err error
 	if depsPrjroot, err = filepath.Abs(depsPrjroot); err != nil {
 		return nil, err
@@ -61,13 +64,33 @@ func GetProject() (*Project, error) {
 	return project, nil
 }
 
+// either base or remote -v origin
 func (p *Project) name() string {
-	// either base or remote -v origin
-	// (?m)^(?:http(?:s)://)?(([^@]+)@)?(.*?)(?:.git)?$
 	// git remote show -n origin
-	// git config --local --get remote.origin.url
-	// (?m)^\s+Fetch URL: (.*?)$
-	return "test"
+	// (?m)^(?:http(?:s)://)?(([^@]+)@)?(.*?)(?:.git)?$
+	origin := p.origin()
+	if origin != "" {
+		return origin
+	}
+	return filepath.Base(p.RootFolder())
+
+}
+
+// git config --local --get remote.origin.url
+// (?m)^\s+Fetch URL: (.*?)$
+func (p *Project) origin() string {
+	gorg, gerr := Git("config --local --get remote.origin.url")
+	// fmt.Printf("gorg='%s', gerr='%+v'", gorg, gerr)
+	if gorg == "" || gerr != nil {
+		return ""
+	}
+	r := regexp.MustCompile(`(?m)^(?:http(?:s)://)?(([^@]+)@)?(.*?)(?:.git)?$`)
+	sm := r.FindAllStringSubmatch(gorg, 1)
+	// fmt.Printf("sm: %+v: %d %d\n", sm, len(sm), len(sm[0]))
+	if len(sm) == 1 && len(sm[0]) == 4 {
+		return sm[0][3]
+	}
+	return ""
 }
 
 func (p *Project) RootFolder() string {
