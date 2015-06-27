@@ -181,3 +181,61 @@ func execcmd(exe, cmd string) (string, error) {
 	}
 	return bout.String(), nil
 }
+
+func (p *Project) updateGGopath(path string) error {
+	dir := filepath.Dir(path)
+	name := filepath.Base(path)
+	gsrcpdir := p.ggopath + string(filepath.Separator) + "src" + string(filepath.Separator) + dir
+	var err error
+	if gsrcpdir, err = filepath.Abs(gsrcpdir); err != nil {
+		return fmt.Errorf("Unable to get absolute path from '%s'", p.ggopath+string(filepath.Separator)+dir)
+	}
+	fmt.Println(gsrcpdir)
+	if fi, _ := os.Stat(gsrcpdir); fi == nil {
+		if err := os.MkdirAll(gsrcpdir, os.ModeDir); err != nil {
+			return err
+		}
+	}
+	gsrc := p.ggopath + string(filepath.Separator) + "src" + string(filepath.Separator) + path
+	if gsrc, err = filepath.Abs(gsrc); err != nil {
+		return fmt.Errorf("Unable to get absolute path from '%s'", p.ggopath+string(os.PathSeparator)+path)
+	}
+	var fi os.FileInfo
+	if fi, _ = os.Stat(gsrc); fi == nil {
+		if _, err := execcmd("mklink", fmt.Sprintf("/J %s %s", gsrc, project.rootFolder)); err != nil {
+			return err
+		}
+	} else {
+		var l string
+		if l, err = execcmd("dir", gsrcpdir); err != nil {
+			return fmt.Errorf("Unable to list %s in '%s'", name, gsrcpdir)
+		}
+		fmt.Println(l)
+		r := regexp.MustCompile(fmt.Sprintf(`(?m)<JUNCTION>\s+%s\s+\[([^\]]+)\]\s*$`, name))
+		n := r.FindAllStringSubmatch(l, -1)
+		fmt.Printf("n='%+v'\n", n)
+		if len(n) == 1 {
+			pp := n[0][1]
+			fmt.Printf("pp='%+v' vs. '%s'\n", pp, p.RootFolder())
+			if strings.HasPrefix(pp, p.RootFolder()) {
+				return nil
+			}
+			return fmt.Errorf("'%s' should point to '%s' but points instead to '%s'", gsrc, p.RootFolder(), pp)
+		}
+		r = regexp.MustCompile(fmt.Sprintf(`(?m)<DIR>\s+%s\s*$`, name))
+		n = r.FindAllStringSubmatch(l, -1)
+		fmt.Printf("n='%+v'\n", n)
+		if len(n) == 1 {
+			// move dir
+			if err = os.Rename(gsrc, gsrc+".1"); err != nil {
+				return fmt.Errorf("Unable to rename '%s'", gsrc)
+			}
+			// Let's try again, now that the dir has been renamed
+			return p.updateGGopath(path)
+		} else {
+			return fmt.Errorf("Unable to access '%s'", gsrc)
+		}
+	}
+	os.Exit(0)
+	return nil
+}
