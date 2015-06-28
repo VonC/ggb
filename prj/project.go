@@ -42,7 +42,7 @@ func GetProject() (*Project, error) {
 	// fmt.Printf("prf '%s'", project.rootFolder)
 	// fmt.Printf("prf '%s'", project.ggopath)
 	name := project.name()
-	// fmt.Printf("name '%s'\n", name)
+	fmt.Printf("name '%s'\n", name)
 	depsPrjroot := project.rootFolder + "/deps/src/" + name
 	// fmt.Printf("prf '%s'\n", depsPrjroot)
 	var err error
@@ -60,6 +60,9 @@ func GetProject() (*Project, error) {
 		if _, err = execcmd("mklink", fmt.Sprintf("/J %s %s", depsPrjroot, project.rootFolder)); err != nil {
 			return nil, err
 		}
+	}
+	if err = project.updateGGopath(name); err != nil {
+		return nil, err
 	}
 	return project, nil
 }
