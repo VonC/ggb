@@ -214,7 +214,7 @@ func (p *Project) updateGGopath(path string) error {
 			return fmt.Errorf("Unable to list %s in '%s'", name, gsrcpdir)
 		}
 		fmt.Println(l)
-		r := regexp.MustCompile(fmt.Sprintf(`(?m)<JUNCTION>\s+%s\s+\[([^\]]+)\]\s*$`, name))
+		r := regexp.MustCompile(fmt.Sprintf(`(?m)<J[UO]NCTION>\s+%s\s+\[([^\]]+)\]\s*$`, name))
 		n := r.FindAllStringSubmatch(l, -1)
 		fmt.Printf("n='%+v'\n", n)
 		if len(n) == 1 {
