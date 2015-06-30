@@ -223,7 +223,11 @@ func (p *Project) updateGGopath(path string) error {
 			if strings.HasPrefix(pp, p.RootFolder()) {
 				return nil
 			}
-			return fmt.Errorf("'%s' should point to '%s' but points instead to '%s'", gsrc, p.RootFolder(), pp)
+			if _, err = execcmd("rmdir", gsrc); err != nil {
+				return fmt.Errorf("Unable remove junction %s pointing to '%s' instead of '%s'", gsrc, pp, p.RootFolder())
+			}
+			// Let's try again, now that the old junction has been removed
+			return p.updateGGopath(path)
 		}
 		r = regexp.MustCompile(fmt.Sprintf(`(?m)<DIR>\s+%s\s*$`, name))
 		n = r.FindAllStringSubmatch(l, -1)
