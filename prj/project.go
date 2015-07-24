@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/VonC/ggb/prj/symlink"
 )
 
 var project *Project
@@ -44,26 +46,12 @@ func GetProject() (*Project, error) {
 	name := project.name()
 	fmt.Printf("name '%s'\n", name)
 	depsPrjroot := project.rootFolder + "/deps/src/" + name
-	// fmt.Printf("prf '%s'\n", depsPrjroot)
-	var err error
-	if depsPrjroot, err = filepath.Abs(depsPrjroot); err != nil {
-		return nil, err
-	}
-	depsPrjdir := filepath.Dir(depsPrjroot)
-	if fi, _ := os.Stat(depsPrjdir); fi == nil {
-		if err := os.MkdirAll(depsPrjdir, os.ModeDir); err != nil {
+	sl, err := symlink.New(depsPrjroot, project.rootFolder)
+	fmt.Printf("prf '%+v': err (%+v)\n", sl, err)
+	/*
+		if err = project.updateGGopath(name); err != nil {
 			return nil, err
-		}
-	}
-	// fmt.Println(depsPrjdir, depsPrjroot)
-	if fi, _ := os.Stat(depsPrjroot); fi == nil {
-		if _, err = execcmd("mklink", fmt.Sprintf("/J %s %s", depsPrjroot, project.rootFolder)); err != nil {
-			return nil, err
-		}
-	}
-	if err = project.updateGGopath(name); err != nil {
-		return nil, err
-	}
+		}*/
 	return project, nil
 }
 
