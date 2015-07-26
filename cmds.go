@@ -11,6 +11,7 @@ var verbose bool
 var help bool
 var version bool
 var cmdggb *cmd.Command
+var cmdadd *cmd.Command
 
 func init() {
 	initCommands()
@@ -18,6 +19,7 @@ func init() {
 
 func initCommands() {
 	initCommandGgb()
+	initCommandAdd()
 }
 
 func initCommandGgb() {
@@ -35,4 +37,14 @@ while 'ggb deps' offers dependency management as git submodules`,
 		gfs.BoolVarP(&debug, "debug", "d", false, "output debug informations (not for batch usage)")
 		gfs.BoolVarP(&version, "version", "V", false, "display ggb version")
 	})
+}
+
+func initCommandAdd() {
+	cmdadd = cmd.NewCommand(
+		"add",
+		"ggb add [cmd]",
+		"Add a dependency to a go project with git submodule dependencies management",
+		`ggb add will add as a submodule a dependency,
+ and check the dependencies of the dependency added`,
+		nil, cmdggb)
 }
