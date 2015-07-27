@@ -92,6 +92,8 @@ func NewCommand(name, usageLine, short, long string, run func([]string) error, p
 
 func (cmd Command) addSubCmd(c *Command) {
 	cmd.subcmds[c.name] = c
+	cmd.fgfs(c.afs)
+	cmd.fgfs(c.gfs)
 }
 
 // Set function for adding flags for that command and any sub-Command FlagSet
@@ -182,6 +184,7 @@ func commandFromArgs(args []string) (*Command, error) {
 			}
 		}
 	}
+	// fmt.Printf("cmd found: '%+v'\n", cmd)
 	if cmd == nil {
 		return nil, fmt.Errorf("Unknown command from args '%v'", args)
 	}
