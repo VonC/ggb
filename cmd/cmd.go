@@ -59,6 +59,7 @@ type Command struct {
 type parent interface {
 	fullCommand() string
 	parseFlags()
+	addSubCmd(*Command)
 }
 
 func NewCommand(name, usageLine, short, long string, run func([]string) error, parent *Command) *Command {
@@ -83,9 +84,14 @@ func NewCommand(name, usageLine, short, long string, run func([]string) error, p
 		commands[name] = cmd
 	} else {
 		cmd.parent = *parent
+		parent.addSubCmd(cmd)
 	}
 	// fmt.Printf("registered parent for name '%s': %v\n", name, commands)
 	return cmd
+}
+
+func (cmd Command) addSubCmd(c *Command) {
+	cmd.subcmds[c.name] = c
 }
 
 // Set function for adding flags for that command and any sub-Command FlagSet
