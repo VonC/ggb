@@ -133,6 +133,7 @@ func (cmd Command) parseFlags() {
 	if cmd.parent != nil {
 		cmd.parent.parseFlags()
 	}
+	// fmt.Printf("cmd name='%s': args='%+v' (afs='%+v')\n", cmd.name, cmd.args, cmd.afs)
 	if err := cmd.afs.Parse(cmd.args); err != nil {
 		fmt.Printf("Incorrect usage of %s:\n", cmd.fullCommand())
 		fmt.Printf("%s", cmd.abuf.String())
@@ -192,6 +193,7 @@ func commandFromArgs(args []string) (*Command, error) {
 }
 
 func (c *Command) fUsage() {
+	// fmt.Printf("fusage called for '%s'\n", c.name)
 	s := strings.Split(c.abuf.String(), "\n")[0]
 	c.abuf.Truncate(len(s))
 	fmt.Fprintf(c.abuf, "\n%s", c.UsageFlags())
@@ -207,6 +209,7 @@ func (c *Command) UsageFlags() string {
 }
 
 func (c *Command) Usage() string {
+	// fmt.Printf("fusage called for '%s'\n", c.name)
 	u := ""
 	u = u + c.name + ": "
 	u = u + c.short + "\n\n"
