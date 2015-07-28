@@ -44,14 +44,18 @@ func GetProject() (*Project, error) {
 	// fmt.Printf("prf '%s'", project.rootFolder)
 	// fmt.Printf("prf '%s'", project.ggopath)
 	name := project.name()
-	fmt.Printf("name '%s'\n", name)
+	// fmt.Printf("name '%s'\n", name)
 	depsPrjroot := project.rootFolder + "/deps/src/" + name
-	sl, err := symlink.New(depsPrjroot, project.rootFolder)
-	fmt.Printf("prf '%+v': err (%+v)\n", sl, err)
+	if _, err := symlink.New(depsPrjroot, project.rootFolder); err != nil {
+		return nil, err
+	}
+	// fmt.Printf("prf '%+v': err (%+v)\n", sl, err)
 	gsrc := project.ggopath + string(filepath.Separator) + "src" + string(filepath.Separator) + name
-	fmt.Printf("gsrc='%+v'\n", gsrc)
-	sl, err = symlink.New(gsrc, project.rootFolder)
-	fmt.Printf("gprf '%+v': err (%+v)\n", sl, err)
+	// fmt.Printf("gsrc='%+v'\n", gsrc)
+	if _, err := symlink.New(gsrc, project.rootFolder); err != nil {
+		return nil, err
+	}
+	// fmt.Printf("gprf '%+v': err (%+v)\n", sl, err)
 	return project, nil
 }
 
