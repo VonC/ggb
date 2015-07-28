@@ -19,7 +19,10 @@ func main() {
 	}
 }
 
+var cmdcurrent *cmd.Command
+
 func build(args []string) error {
+	cmdcurrent = cmdggb
 	if verbose {
 		fmt.Printf("build to be done with args '%v'", args)
 	}
@@ -43,6 +46,15 @@ func build(args []string) error {
 	return nil
 }
 
+func add(args []string) error {
+	cmdcurrent = cmdadd
+	if verbose {
+		fmt.Printf("Add to be done with args '%v'", args)
+	}
+	checkGlobalFlag()
+	return nil
+}
+
 func checkGlobalFlag() {
 	if help {
 		usage()
@@ -54,5 +66,5 @@ func checkGlobalFlag() {
 }
 
 func usage() {
-	fmt.Print(cmdggb.Usage())
+	fmt.Print(cmdadd.Usage())
 }

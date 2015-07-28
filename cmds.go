@@ -46,5 +46,5 @@ func initCommandAdd() {
 		"Add a dependency to a go project with git submodule dependencies management",
 		`ggb add will add as a submodule a dependency,
  and check the dependencies of the dependency added`,
-		nil, cmdggb)
+		add, cmdggb)
 }
