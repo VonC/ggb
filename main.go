@@ -52,6 +52,10 @@ func add(args []string) error {
 		fmt.Printf("Add to be done with args '%v'", args)
 	}
 	checkGlobalFlag()
+	if len(args) == 0 {
+		fmt.Println("At least one dependency url is expected")
+		os.Exit(1)
+	}
 	return nil
 }
 
