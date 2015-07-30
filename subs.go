@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
-func addsub(args []string) {
-	fmt.Printf("addsub %v", args)
+func addsub(arg string) error {
+	fmt.Printf("addsub %v\n", arg)
+	return nil
 }

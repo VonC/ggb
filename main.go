@@ -56,6 +56,11 @@ func add(args []string) error {
 		fmt.Println("At least one dependency url is expected")
 		os.Exit(1)
 	}
+	for _, arg := range args {
+		if err := addsub(arg); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
