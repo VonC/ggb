@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+
+	"github.com/VonC/ggb/prj"
 )
 
 type dep struct {
@@ -19,6 +21,11 @@ func addsub(arg string) error {
 		return err
 	}
 	fmt.Printf("dep='%+v'\n", d)
+	var p *prj.Project
+	if p, err = prj.GetProject(); err != nil {
+		return err
+	}
+	fmt.Printf("Project '%s'\n", p.RootFolder())
 	return nil
 }
 
