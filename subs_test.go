@@ -1,6 +1,15 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
+
+type test struct {
+	name string
+	arg  string
+	err  string
+}
 
 func TestAddSub(t *testing.T) {
 	// Only github.com/a/b is authorized.
@@ -20,4 +29,14 @@ func TestAddSub(t *testing.T) {
 	//   - if sub's sub is already declared as a sub, test SHA1:
 	//     - if same SHA1, no-op
 	//     - if differ, print warning
+	tests := []*test{
+		&test{name: "Only github.com/a/b is authorized.", arg: "a/b/c", err: "doesn't match github.com"},
+	}
+	var err error
+	for _, test := range tests {
+		err = addsub(test.arg)
+		if err == nil || strings.Contains(err.Error(), test.err) == false {
+			t.Errorf("Err '%v', expected '%s'", err, test.err)
+		}
+	}
 }
