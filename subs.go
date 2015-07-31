@@ -33,7 +33,7 @@ var githubre = regexp.MustCompile(`(?m)^github.com/([^/]+)/[^/]+$`)
 
 func newDep(arg string) (*dep, error) {
 	if githubre.MatchString(arg) == false {
-		return nil, fmt.Errorf("Dependency '%s' does nto match github.com/xxx/yyy", arg)
+		return nil, fmt.Errorf("Dependency '%s' doesn't match github.com/xxx/yyy", arg)
 	}
 	res := githubre.FindStringSubmatch(arg)
 	path := "deps/src/" + arg
