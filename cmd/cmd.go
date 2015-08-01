@@ -159,6 +159,9 @@ func commandFromArgs(args []string) (*Command, error) {
 			if ext != "" {
 				arg = arg[:len(arg)-len(ext)]
 			}
+			if strings.HasSuffix(arg, ".test") {
+				return &Command{name: "test", afs: flag.NewFlagSet("test", flag.ContinueOnError)}, nil
+			}
 		}
 		// fmt.Printf("arg='%s'\n", arg)
 		if arg == "--" {
