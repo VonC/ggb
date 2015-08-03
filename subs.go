@@ -13,6 +13,8 @@ type dep struct {
 	path string
 }
 
+var prjGetProject = prj.GetProject
+
 func addsub(arg string) error {
 	fmt.Printf("addsub %v\n", arg)
 	var d *dep = nil
@@ -22,7 +24,7 @@ func addsub(arg string) error {
 	}
 	fmt.Printf("dep='%+v'\n", d)
 	var p *prj.Project
-	if p, err = prj.GetProject(); err != nil {
+	if p, err = prjGetProject(); err != nil {
 		return err
 	}
 	fmt.Printf("Project '%s'\n", p.RootFolder())
