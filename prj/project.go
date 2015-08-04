@@ -15,18 +15,25 @@ import (
 	"github.com/VonC/ggb/prj/symlink"
 )
 
-var project *Project
+var prj Project
 var Debug bool
 
-type Project struct {
+type Project interface {
+	RootFolder() string
+	name() string
+	ggoPath() string
+}
+
+type project struct {
 	rootFolder string
 	// Global  GOPATH
 	ggopath string
 }
 
-func GetProject() (*Project, error) {
-	if project == nil {
-		project = &Project{}
+func GetProject() (Project, error) {
+	if prj == nil {
+		p := &project{}
+		prj = p
 		gdir, gerr := Git("rev-parse --git-dir")
 		gdir = strings.TrimSpace(gdir)
 		// fmt.Printf("ko '%s' '%s'", gdir, gerr)
@@ -34,33 +41,37 @@ func GetProject() (*Project, error) {
 			return nil, gerr
 		}
 		if gdir != ".git" {
-			project.rootFolder = gdir[:len(gdir)-5]
+			p.rootFolder = gdir[:len(gdir)-5]
 		} else {
 			// fmt.Printf("ok")
-			project.rootFolder = wd
+			p.rootFolder = wd
 		}
-		project.ggopath = os.Getenv("GOPATH")
+		p.ggopath = os.Getenv("GOPATH")
 	}
-	// fmt.Printf("prf '%s'", project.rootFolder)
-	// fmt.Printf("prf '%s'", project.ggopath)
-	name := project.name()
+	// fmt.Printf("prf '%s'", prj.rootFolder)
+	// fmt.Printf("prf '%s'", prj.ggopath)
+	name := prj.name()
 	// fmt.Printf("name '%s'\n", name)
-	depsPrjroot := project.rootFolder + "/deps/src/" + name
-	if _, err := symlink.New(depsPrjroot, project.rootFolder); err != nil {
+	depsPrjroot := prj.RootFolder() + "/deps/src/" + name
+	if _, err := symlink.New(depsPrjroot, prj.RootFolder()); err != nil {
 		return nil, err
 	}
 	// fmt.Printf("prf '%+v': err (%+v)\n", sl, err)
-	gsrc := project.ggopath + string(filepath.Separator) + "src" + string(filepath.Separator) + name
+	gsrc := prj.ggoPath() + string(filepath.Separator) + "src" + string(filepath.Separator) + name
 	// fmt.Printf("gsrc='%+v'\n", gsrc)
-	if _, err := symlink.New(gsrc, project.rootFolder); err != nil {
+	if _, err := symlink.New(gsrc, prj.RootFolder()); err != nil {
 		return nil, err
 	}
 	// fmt.Printf("gprf '%+v': err (%+v)\n", sl, err)
-	return project, nil
+	return prj, nil
+}
+
+func (p *project) ggoPath() string {
+	return p.ggopath
 }
 
 // either base or remote -v origin
-func (p *Project) name() string {
+func (p *project) name() string {
 	// git remote show -n origin
 	// (?m)^(?:http(?:s)://)?(([^@]+)@)?(.*?)(?:.git)?$
 	origin := p.origin()
@@ -73,7 +84,7 @@ func (p *Project) name() string {
 
 // git config --local --get remote.origin.url
 // (?m)^\s+Fetch URL: (.*?)$
-func (p *Project) origin() string {
+func (p *project) origin() string {
 	gorg, gerr := Git("config --local --get remote.origin.url")
 	// fmt.Printf("gorg='%s', gerr='%+v'", gorg, gerr)
 	if gorg == "" || gerr != nil {
@@ -88,7 +99,7 @@ func (p *Project) origin() string {
 	return ""
 }
 
-func (p *Project) RootFolder() string {
+func (p *project) RootFolder() string {
 	return p.rootFolder
 }
 
@@ -151,8 +162,8 @@ func Git(cmd string) (string, error) {
 	return execcmd(gitPath, cmd)
 }
 func Golang(cmd string) (string, error) {
-	os.Setenv("GOPATH", project.rootFolder+`/deps`)
-	os.Setenv("GOBIN", project.rootFolder+`/bin`)
+	os.Setenv("GOPATH", prj.RootFolder()+`/deps`)
+	os.Setenv("GOBIN", prj.RootFolder()+`/bin`)
 	return execcmd(goPath, cmd)
 }
 
@@ -163,7 +174,7 @@ func execcmd(exe, cmd string) (string, error) {
 	args := strings.Split(cmd, " ")
 	args = append([]string{"/c", exe}, args...)
 	c := exec.Command("cmd", args...)
-	c.Dir = project.rootFolder
+	c.Dir = prj.RootFolder()
 	var bout bytes.Buffer
 	c.Stdout = &bout
 	var berr bytes.Buffer
