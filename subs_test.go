@@ -40,6 +40,8 @@ func TestAddSub(t *testing.T) {
 			arg: "a/b/c", err: "doesn't match github.com"},
 		&test{name: "fail get project.",
 			arg: "github.com/get/project", err: "Unable to get project"},
+		&test{name: "get project.",
+			arg: "github.com/get/okproject"},
 	}
 	var err error
 	for _, test := range tests {
