@@ -23,7 +23,7 @@ func addsub(arg string) error {
 		return err
 	}
 	fmt.Printf("dep='%+v'\n", d)
-	var p *prj.Project
+	var p prj.Project
 	if p, err = prjGetProject(); err != nil {
 		return err
 	}
