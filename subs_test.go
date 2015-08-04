@@ -47,15 +47,23 @@ func TestAddSub(t *testing.T) {
 	for _, test := range tests {
 		currentTest = test
 		err = addsub(test.arg)
-		if err == nil || strings.Contains(err.Error(), test.err) == false {
+		if test.err != "" && (err == nil || strings.Contains(err.Error(), test.err) == false) {
 			t.Errorf("Err '%v', expected '%s'", err, test.err)
 		}
 	}
 }
 
-func testPrjGetProject() (*prj.Project, error) {
+type tproject struct {
+	prj.Project
+}
+
+func (tp *tproject) RootFolder() string {
+	return "testrf"
+}
+
+func testPrjGetProject() (prj.Project, error) {
 	if currentTest.arg == "github.com/get/project" {
 		return nil, fmt.Errorf("Unable to get project")
 	}
-	return nil, nil
+	return &tproject{}, nil
 }
