@@ -35,21 +35,30 @@ func TestAddSub(t *testing.T) {
 	//     - if same SHA1, no-op
 	//     - if differ, print warning
 	prjGetProject = testPrjGetProject
+	prjGit = testPrjGit
 	tests := []*test{
 		&test{name: "Only github.com/a/b is authorized.",
 			arg: "a/b/c", err: "doesn't match github.com"},
 		&test{name: "fail get project.",
 			arg: "github.com/get/project", err: "Unable to get project"},
-		&test{name: "get project.",
-			arg: "github.com/get/okproject"},
+		&test{name: "Index must be clean: err",
+			arg: "github.com/err/index"},
+		&test{name: "Index must be clean: not clean",
+			arg: "github.com/notclean/index"},
+		&test{name: "Add sub",
+			arg: "github.com/add/sub"},
 	}
 	var err error
 	for _, test := range tests {
 		currentTest = test
+		if currentTest.name == "Add sub" {
+			verbose = true
+		}
 		err = addsub(test.arg)
 		if test.err != "" && (err == nil || strings.Contains(err.Error(), test.err) == false) {
 			t.Errorf("Err '%v', expected '%s'", err, test.err)
 		}
+		verbose = false
 	}
 }
 
@@ -66,4 +75,14 @@ func testPrjGetProject() (prj.Project, error) {
 		return nil, fmt.Errorf("Unable to get project")
 	}
 	return &tproject{}, nil
+}
+
+func testPrjGit(cmd string) (string, error) {
+	if currentTest.arg == "github.com/err/index" {
+		return "", fmt.Errorf("Unable to execute git status")
+	}
+	if currentTest.arg == "github.com/notclean/index" {
+		return "not clean", nil
+	}
+	return "", nil
 }

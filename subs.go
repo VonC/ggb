@@ -14,20 +14,34 @@ type dep struct {
 }
 
 var prjGetProject = prj.GetProject
+var prjGit = prj.Git
 
 func addsub(arg string) error {
-	fmt.Printf("addsub %v\n", arg)
+	if verbose {
+		fmt.Printf("addsub %v\n", arg)
+	}
 	var d *dep = nil
 	var err error
 	if d, err = newDep(arg); err != nil {
 		return err
 	}
-	fmt.Printf("dep='%+v'\n", d)
+	if verbose {
+		fmt.Printf("dep='%+v'\n", d)
+	}
 	var p prj.Project
 	if p, err = prjGetProject(); err != nil {
 		return err
 	}
-	fmt.Printf("Project '%s'\n", p.RootFolder())
+	if verbose {
+		fmt.Printf("Project '%s'\n", p.RootFolder())
+	}
+	status, err := prjGit("git status --porcelain -s")
+	if err != nil {
+		return err
+	}
+	if status != "" {
+		return fmt.Errorf("Add sub only if index clean (status: %s)", status)
+	}
 	return nil
 }
 
