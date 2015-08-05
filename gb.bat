@@ -13,7 +13,9 @@ if not exist %~dp0\deps\src\github.com\spf13\pflag\.git (
 rem cd
 rem set GO
 mklink /J deps\src\github.com\VonC\ggb %~dp0 2>/NUL
-%GOROOT%\bin\go.exe test -coverprofile=coverage.out %*|grep -v -e "^\.\.*$"|grep -v "^$"|grep -v "thus far"
-%GOROOT%\bin\go.exe install -a .
+%GOROOT%\bin\go.exe build ^
+ && %GOROOT%\bin\go.exe test 1>NUL && %GOROOT%\bin\go.exe test -coverprofile=coverage.out %*|grep -v -e "^\.\.*$"|grep -v "^$"|grep -v "thus far" ^
+ && %GOROOT%\bin\go.exe install -a .
 endlocal
 doskey ggb=%~dp0\bin\ggb.exe $*
+gc|grep -v main.go
